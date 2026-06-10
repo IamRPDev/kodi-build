@@ -15,8 +15,8 @@ jobs:
 
       - name: Sync Repositories
         run: |
-          # Read repositories from repos.yaml
-          repos=$(yq eval '.repositories[] | .name + "|" + .url + "|" + .destination' repos.yaml)
+          # Read repositories from favorites.yaml
+          repos=$(yq eval '.repositories[] | .name + "|" + .url + "|" + .destination' favorites.yaml)
 
           for entry in $repos; do
             name=$(echo $entry | cut -d'|' -f1)
