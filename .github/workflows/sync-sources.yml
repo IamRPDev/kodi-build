@@ -3,6 +3,9 @@ name: Sync Source pre Compile
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -32,6 +35,8 @@ jobs:
               mkdir -p "$(dirname "$dest")"
               git clone "$url" "$dest"
             fi
+            # Remove .git folder so it can be committed as files, not a gitlink
+            rm -rf "$dest/.git"
           done
 
       - name: Commit changes
@@ -41,7 +46,11 @@ jobs:
           # Dynamically add all destinations defined in sources.yaml
           destinations=$(yq eval '.repositories[].destination' sources.yaml)
           for dest in $destinations; do
-            git add "$dest" || echo "Warning: Could not add $dest"
+            if [ -d "$dest" ]; then
+              git add "$dest"
+            else
+              echo "Warning: $dest does not exist, skipping."
+            fi
           done
           
           if ! git diff-index --quiet HEAD --; then

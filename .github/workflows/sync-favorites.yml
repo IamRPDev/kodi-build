@@ -3,6 +3,9 @@ name: Sync Favorite Addons
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -34,6 +37,8 @@ jobs:
                 mkdir -p "$(dirname "$dest")"
                 git clone "$url" "$dest"
               fi
+              # Remove .git folder so it can be committed as files, not a gitlink
+              rm -rf "$dest/.git"
             done
           else
             echo "favorites.yaml is empty or missing, skipping."
@@ -43,7 +48,9 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add favorites/
+          if [ -d "favorites/" ]; then
+            git add favorites/
+          fi
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore: sync favorites"
             git push
