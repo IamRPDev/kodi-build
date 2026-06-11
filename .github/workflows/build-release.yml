@@ -12,13 +12,8 @@ env:
 jobs:
   build-linux:
     name: Build Linux (Ubuntu)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          path: kodi-build
-
       - name: Checkout Kodi Source
         uses: actions/checkout@v4
         with:
@@ -31,15 +26,24 @@ jobs:
           sudo add-apt-repository -s ppa:team-xbmc/xbmc-nightly -y
           sudo apt update
           sudo apt build-dep kodi -y
-          sudo apt install -y rpm ruby ruby-dev rubygems build-essential
+          sudo apt install -y rpm ruby ruby-dev rubygems build-essential ccache
           sudo gem install --no-document fpm
+
+      - name: Setup Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
 
       - name: Configure CMake
         run: |
           mkdir build
           cmake -S kodi-source -B build \
             -DCMAKE_INSTALL_PREFIX=/usr \
-            -DAPP_RENDER_SYSTEM=gl
+            -DAPP_RENDER_SYSTEM=gl \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build Kodi
         run: cmake --build build -- -j$(nproc)
@@ -51,12 +55,9 @@ jobs:
 
       - name: Create DEB and RPM Packages
         run: |
-          # Create a dummy install for FPM
           mkdir -p pkg_root
           DESTDIR=$(pwd)/pkg_root cmake --install build
-          
           VERSION=$(grep "VERSION_CODE" kodi-source/version.txt | awk '{print $2}')
-          
           fpm -s dir -t deb -n kodi -v "$VERSION" -C pkg_root usr/
           fpm -s dir -t rpm -n kodi -v "$VERSION" -C pkg_root usr/
 
@@ -79,6 +80,12 @@ jobs:
           repository: xbmc/xbmc
           path: kodi-source
           fetch-depth: 1
+
+      - name: Install Dependencies
+        shell: pwsh
+        run: |
+          pip install meson
+          choco install pkgconfiglite -y
 
       - name: Configure and Build
         shell: pwsh
