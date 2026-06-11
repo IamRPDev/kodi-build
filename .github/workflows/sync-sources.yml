@@ -38,7 +38,12 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add source/
+          # Dynamically add all destinations defined in sources.yaml
+          destinations=$(yq eval '.repositories[].destination' sources.yaml)
+          for dest in $destinations; do
+            git add "$dest" || echo "Warning: Could not add $dest"
+          done
+          
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore: sync sources"
             git push

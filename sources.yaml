@@ -2,9 +2,6 @@ repositories:
   - name: kodi
     url: https://github.com/xbmc/xbmc.git
     destination: source/kodi
-
-
-repositories:
   - name: addon-check
     url: https://github.com/xbmc/addon-check.git
     destination: tools/addon-check
