@@ -39,7 +39,7 @@ jobs:
           for repo in "${builders[@]}"; do
             echo "🚀 Triggering build for $repo ($TARGET_BRANCH)..."
             gh workflow run build.yml \
-              --repo "IamRPDev/$repo" \
+              --repo "RPDevs-Builds/$repo" \
               --ref main \
               -f branch_input="$TARGET_BRANCH"
           done
@@ -55,4 +55,4 @@ jobs:
           echo "- FFmpegDirect (inputstream.ffmpegdirect-build)" >> $GITHUB_STEP_SUMMARY
           echo "- Adaptive (inputstream.adaptive-build)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Monitor progress via the [Kodi Build Hub README](https://github.com/IamRPDev/kodi-build#build--distribution-status)." >> $GITHUB_STEP_SUMMARY
+          echo "Monitor progress via the [Kodi Build Hub README](https://github.com/RPDevs-Builds/kodi-build#build--distribution-status)." >> $GITHUB_STEP_SUMMARY

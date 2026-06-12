@@ -1,0 +1,31 @@
+services:
+  linux-builder:
+    build: 
+      context: ./linux-builder
+    container_name: kodi-linux-builder
+    restart: always
+    environment:
+      - GH_OWNER=RPDevs-Builds
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=kodi-local-linux
+      - RUNNER_LABELS=self-hosted,linux64
+    volumes:
+      - /mnt/largedata/github_runners/linux-builder/work:/home/runner/_work
+      - /mnt/sharedroot/appdata/github_runners/linux-builder/outputs:/home/runner/outputs
+      - /home/llmuser/.ccache:/home/runner/.ccache
+    security_opt:
+      - no-new-privileges:true
+
+  addon-builder:
+    build:
+      context: ./addon-builder
+    container_name: kodi-addon-builder
+    restart: always
+    environment:
+      - GH_OWNER=RPDevs-Builds
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=kodi-local-addon
+      - RUNNER_LABELS=self-hosted,lightweight
+    volumes:
+      - /mnt/largedata/github_runners/addon-builder/work:/home/runner/_work
+      - /mnt/sharedroot/appdata/github_runners/addon-builder/outputs:/home/runner/outputs
