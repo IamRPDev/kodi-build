@@ -22,7 +22,15 @@ RUN apt-get update && apt-get install -y \
     ccache \
     cmake \
     ninja-build \
+    rsync \
+    patch \
+    wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js (Required for many GitHub Actions)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 # Pre-install ALL Kodi C++ build dependencies (The massive list we identified)
 RUN apt-get update && apt-get install -y \
@@ -53,7 +61,7 @@ RUN useradd -m runner && \
 
 # Download and install the GitHub Runner agent
 WORKDIR /home/runner
-ARG RUNNER_VERSION=2.317.0
+ARG RUNNER_VERSION=2.335.1
 RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
     tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
     rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz

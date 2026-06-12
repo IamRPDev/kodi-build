@@ -77,7 +77,7 @@ jobs:
       fail-fast: false
       matrix: ${{{{ fromJson(needs.setup-matrix.outputs.matrix) }}}}
     name: Build ${{{{ matrix.branch }}}} on ${{{{ matrix.platform }}}}
-    runs-on: ${{{{ (matrix.platform == 'osx64' && 'macos-latest') || ('{is_cpp}' == 'True' && fromJSON('["self-hosted", "linux64"]') || fromJSON('["self-hosted", "lightweight"]')) }}}}
+    runs-on: ${{{{ (matrix.platform == 'osx64' && 'macos-latest') || (matrix.platform == 'linux64' && fromJSON('["self-hosted", "linux64"]')) || fromJSON('["self-hosted", "lightweight"]') }}}}
     defaults:
       run:
         shell: bash
@@ -91,15 +91,11 @@ jobs:
           fetch-depth: 1
 
       - name: Install System Dependencies
+        if: ${{{{ !contains(runner.labels, 'self-hosted') }}}}
         run: |
           if [ "${{{{ runner.os }}}}" == "Linux" ]; then
             sudo apt update
-            sudo apt install -y build-essential autoconf automake autopoint gettext cmake curl gawk gperf python3-dev libtool zip unzip \\
-              libudev-dev libdrm-dev libgbm-dev libasound2-dev libpulse-dev libva-dev libvdpau-dev libxml2-dev libxslt1-dev \\
-              libsqlite3-dev libcurl4-openssl-dev libssl-dev libbluray-dev libcdio-dev libiso9660-dev liblzo2-dev libpcre3-dev \\
-              libmysqlclient-dev libcap-dev libfribidi-dev libfontconfig1-dev libfreetype6-dev libass-dev libfribidi-dev \\
-              libdbus-1-dev libsystemd-dev libavahi-client-dev libavahi-common-dev libmicrohttpd-dev libtinyxml-dev \\
-              libyajl-dev libplist-dev libnfs-dev libshairplay-dev libsmbclient-dev libfmt-dev libspdlog-dev libflatbuffers-dev
+            sudo apt install -y build-essential autoconf automake autopoint gettext cmake curl gawk gperf python3-dev libtool zip unzip libudev-dev libdrm-dev libgbm-dev libasound2-dev libpulse-dev libva-dev libvdpau-dev libxml2-dev libxslt1-dev libsqlite3-dev libcurl4-openssl-dev libssl-dev libbluray-dev libcdio-dev libiso9660-dev liblzo2-dev libpcre3-dev libmysqlclient-dev libcap-dev libfribidi-dev libfontconfig1-dev libfreetype6-dev libass-dev libdbus-1-dev libsystemd-dev libavahi-client-dev libavahi-common-dev libmicrohttpd-dev libtinyxml-dev libyajl-dev libplist-dev libnfs-dev libshairplay-dev libsmbclient-dev libfmt-dev libspdlog-dev libflatbuffers-dev
             if [ "${{{{ matrix.platform }}}}" == "linux64" ]; then
               sudo apt install -y libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxrender-dev libxss-dev libgl1-mesa-dev
             fi
@@ -127,26 +123,21 @@ jobs:
           if [ "{is_cpp}" == "True" ]; then
             echo "🚀 Performing C++ Build for ${{{{ matrix.platform }}}}..."
             if [ "{comp_id}" == "xbmc" ]; then
-              if [ "${{{{ matrix.platform }}}}" == "linux64" ]; then
-                mkdir build && cd build
-                cmake ../source/xbmc -DCMAKE_INSTALL_PREFIX=../$OUT_DIR -DAPP_RENDER_SYSTEM=gl
-                make -j$(nproc) install
-              else
-                # Cross-compilation or non-linux native using depends
-                cd source/xbmc/tools/depends
-                ./bootstrap
-                case "${{{{ matrix.platform }}}}" in
-                  win64) CONFIG_FLAGS="--host=x86_64-w64-mingw32" ;;
-                  android-arm64) CONFIG_FLAGS="--host=aarch64-linux-android --with-sdk=/opt/android-sdk --with-ndk=/opt/android-sdk/ndk-bundle" ;;
-                  osx64) CONFIG_FLAGS="--with-platform=macos" ;;
-                esac
-                ./configure --prefix=$(pwd)/../../../../xbmc-deps $CONFIG_FLAGS
-                make -j$(nproc || sysctl -n hw.ncpu)
-                cd ../../../
-                mkdir build && cd build
-                cmake ../source/xbmc -DCMAKE_INSTALL_PREFIX=../$OUT_DIR -DCMAKE_PREFIX_PATH=$(pwd)/../xbmc-deps
-                make -j$(nproc || sysctl -n hw.ncpu) install
-              fi
+              # All Core platforms use depends for consistency
+              cd source/xbmc/tools/depends
+              ./bootstrap
+              case "${{{{ matrix.platform }}}}" in
+                win64) export CONFIG_FLAGS="--host=x86_64-w64-mingw32 --with-platform=windows" ;;
+                android-arm64) export CONFIG_FLAGS="--host=aarch64-linux-android --with-platform=android --with-sdk=/opt/android-sdk --with-ndk=/opt/android-sdk/ndk-bundle" ;;
+                osx64) export CONFIG_FLAGS="--with-platform=macos" ;;
+                linux64) export CONFIG_FLAGS="--with-platform=linux --with-rendersystem=gl" ;;
+              esac
+              ./configure --prefix=$(pwd)/../../../../xbmc-deps $CONFIG_FLAGS
+              make -j$(nproc || sysctl -n hw.ncpu)
+              cd ../../../
+              mkdir build && cd build
+              cmake ../source/xbmc -DCMAKE_INSTALL_PREFIX=../$OUT_DIR -DCMAKE_PREFIX_PATH=$(pwd)/../xbmc-deps
+              make -j$(nproc || sysctl -n hw.ncpu) install
             else
               # Addon C++ Build
               mkdir build && cd build
