@@ -12,10 +12,10 @@
     "timestamp": "2026-06-13T03:41:27Z"
   },
   "inputstream.adaptive-build": {
-    "status": "success",
-    "conclusion": "success",
-    "url": "https://github.com/RPDevs-Builds/inputstream.adaptive-build/actions/runs/27455394789",
-    "timestamp": "2026-06-13T04:08:01Z"
+    "status": "failure",
+    "conclusion": "failure",
+    "url": "https://github.com/RPDevs-Builds/inputstream.adaptive-build/actions/runs/27455466110",
+    "timestamp": "2026-06-13T04:26:07Z"
   },
   "repo-plugins-build": {
     "status": "success",
