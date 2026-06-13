@@ -4,12 +4,22 @@ on:
   repository_dispatch:
     types: [fleet_status_update]
 
+# Ensure only one aggregator runs at a time to prevent git push collisions
+concurrency:
+  group: fleet-status-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   update-status:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Hub
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Update JSON Status
         run: |
@@ -35,4 +45,9 @@ jobs:
           git config --global user.email "actions@github.com"
           git add fleet-status.json
           git commit -m "chore: update fleet status for ${{ github.event.client_payload.repository }}" || echo "No changes"
-          git push
+          
+          # Retry push in case of race conditions
+          for i in {1..5}; do
+            git pull --rebase origin master
+            git push origin master && break || sleep 5
+          done
