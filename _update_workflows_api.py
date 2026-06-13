@@ -230,6 +230,19 @@ jobs:
             exit 0
           fi
           {dispatch_logic}
+
+      - name: Send Status to Hub Aggregator
+        if: always()
+        env:
+          GH_TOKEN: ${{{{ secrets.GH_PAT }}}}
+        run: |
+          gh api -X POST repos/RPDevs-Builds/kodi-build/dispatches \\
+            -H "Accept: application/vnd.github.v3+json" \\
+            -f event_type="fleet_status_update" \\
+            -F client_payload[repository]="{repo_name}" \\
+            -F client_payload[status]="${{{{ job.status }}}}" \\
+            -F client_payload[conclusion]="${{{{ job.status }}}}" \\
+            -F client_payload[url]="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 """
     # Use gh api to put the file content
     content_b64 = base64.b64encode(workflow_content.encode()).decode()

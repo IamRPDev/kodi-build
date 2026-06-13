@@ -1,0 +1,38 @@
+name: Fleet Status Aggregator
+
+on:
+  repository_dispatch:
+    types: [fleet_status_update]
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Hub
+        uses: actions/checkout@v4
+
+      - name: Update JSON Status
+        run: |
+          echo "Received payload:"
+          echo '${{ toJSON(github.event.client_payload) }}'
+          
+          # Initialize if not exists
+          if [ ! -f fleet-status.json ]; then
+            echo "{}" > fleet-status.json
+          fi
+          
+          # Merge new status using jq
+          jq --arg repo "${{ github.event.client_payload.repository }}" \
+             --arg status "${{ github.event.client_payload.status }}" \
+             --arg conclusion "${{ github.event.client_payload.conclusion }}" \
+             --arg url "${{ github.event.client_payload.url }}" \
+             '.[$repo] = {status: $status, conclusion: $conclusion, url: $url, timestamp: (now | todate)}' \
+             fleet-status.json > tmp.json && mv tmp.json fleet-status.json
+
+      - name: Commit Status Update
+        run: |
+          git config --global user.name "GitHub Actions Aggregator"
+          git config --global user.email "actions@github.com"
+          git add fleet-status.json
+          git commit -m "chore: update fleet status for ${{ github.event.client_payload.repository }}" || echo "No changes"
+          git push
