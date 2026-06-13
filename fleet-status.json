@@ -24,9 +24,9 @@
     "timestamp": "2026-06-13T03:40:59Z"
   },
   "inputstream.ffmpegdirect-build": {
-    "status": "failure",
-    "conclusion": "failure",
+    "status": "success",
+    "conclusion": "success",
     "url": "https://github.com/RPDevs-Builds/inputstream.ffmpegdirect-build/actions/runs/27455465593",
-    "timestamp": "2026-06-13T04:24:56Z"
+    "timestamp": "2026-06-13T04:25:56Z"
   }
 }
