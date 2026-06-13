@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y \
     libdbus-1-dev libsystemd-dev libavahi-client-dev libavahi-common-dev libmicrohttpd-dev libtinyxml-dev \
     libyajl-dev libplist-dev libnfs-dev libshairplay-dev libsmbclient-dev libfmt-dev libspdlog-dev libflatbuffers-dev \
     libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxrender-dev libxss-dev libgl1-mesa-dev \
-    libexiv2-dev libdav1d-dev nasm meson \
+    libexiv2-dev libdav1d-dev nasm meson swig \
     wayland-protocols libwayland-dev libinput-dev libxkbcommon-dev waylandpp-dev \
     libvulkan-dev libegl1-mesa-dev libgles2-mesa-dev hwdata \
     # Cross-compilation tools
