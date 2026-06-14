@@ -1,44 +1,71 @@
+x-runner-base: &runner-base
+  image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
+  restart: always
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+    - /mnt/sharedroot/github_runners/T430:/home/runner/outputs
+    - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+    - /var/run/docker.sock:/var/run/docker.sock
+
 services:
-  t430-medium:
-    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
-    container_name: t430-medium-builder
-    restart: always
+  # --- RPDevs-Builds ---
+  builds-medium:
+    <<: *runner-base
+    container_name: builds-medium-01
     environment:
-      - GH_OWNER=RPDevs-Vault
+      - GH_OWNER=RPDevs-Builds
       - GH_TOKEN=${GH_PAT}
-      - RUNNER_NAME=t430-medium-01
-      - RUNNER_LABELS=self-hosted,linux,medium
+      - RUNNER_NAME=t430-builds-medium-01
+      - RUNNER_LABELS=self-hosted,linux,medium,linux64
     volumes:
-      - /mnt/data/github_runners/work/t430-medium:/home/runner/_work
+      - /mnt/data/github_runners/work/builds-medium:/home/runner/_work
       - /mnt/sharedroot/github_runners/shared:/home/runner/shared
       - /mnt/sharedroot/github_runners/T430:/home/runner/outputs
       - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
       - /var/run/docker.sock:/var/run/docker.sock
-    security_opt:
-      - no-new-privileges:true
     deploy:
       resources:
         limits:
           cpus: '2'
-          memory: 3G
+          memory: 2G
 
-  t430-lite:
-    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
-    container_name: t430-lite-builder
-    restart: always
+  builds-lite:
+    <<: *runner-base
+    container_name: builds-lite-01
     environment:
-      - GH_OWNER=RPDevs-Vault
+      - GH_OWNER=RPDevs-Builds
       - GH_TOKEN=${GH_PAT}
-      - RUNNER_NAME=t430-lite-01
-      - RUNNER_LABELS=self-hosted,linux,lite
+      - RUNNER_NAME=t430-builds-lite-01
+      - RUNNER_LABELS=self-hosted,linux,lite,lightweight
     volumes:
-      - /mnt/data/github_runners/work/t430-lite:/home/runner/_work
+      - /mnt/data/github_runners/work/builds-lite:/home/runner/_work
       - /mnt/sharedroot/github_runners/shared:/home/runner/shared
       - /mnt/sharedroot/github_runners/T430:/home/runner/outputs
       - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
       - /var/run/docker.sock:/var/run/docker.sock
-    security_opt:
-      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # --- RPDevs-Vault ---
+  vault-medium:
+    <<: *runner-base
+    container_name: vault-medium-01
+    environment:
+      - GH_OWNER=RPDevs-Vault
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=t430-vault-medium-01
+      - RUNNER_LABELS=self-hosted,linux,medium,linux64
+    volumes:
+      - /mnt/data/github_runners/work/vault-medium:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/T430:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       resources:
         limits:

@@ -1,46 +1,115 @@
+x-runner-base: &runner-base
+  image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
+  restart: always
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+    - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+    - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+    - /var/run/docker.sock:/var/run/docker.sock
+
 services:
-  llmadmin-heavy:
-    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
-    container_name: llmadmin-heavy-builder
-    restart: always
+  # --- RPDevs-Builds (Primary Build Org) ---
+  builds-heavy:
+    <<: *runner-base
+    container_name: builds-heavy-01
     environment:
-      - GH_OWNER=RPDevs-Vault
+      - GH_OWNER=RPDevs-Builds
       - GH_TOKEN=${GH_PAT}
-      - RUNNER_NAME=llmadmin-heavy-01
-      - RUNNER_LABELS=self-hosted,linux,heavy
+      - RUNNER_NAME=llmadmin-builds-heavy-01
+      - RUNNER_LABELS=self-hosted,linux,heavy,linux64
     volumes:
-      - /mnt/largedata/github_runners/work/llmadmin-heavy:/home/runner/_work
+      - /mnt/largedata/github_runners/work/builds-heavy:/home/runner/_work
       - /mnt/sharedroot/github_runners/shared:/home/runner/shared
       - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
       - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
       - /var/run/docker.sock:/var/run/docker.sock
-    security_opt:
-      - no-new-privileges:true
     deploy:
       resources:
         limits:
           cpus: '8'
-          memory: 12G
+          memory: 8G
 
-  llmadmin-lite:
-    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
-    container_name: llmadmin-lite-builder
-    restart: always
+  builds-lite:
+    <<: *runner-base
+    container_name: builds-lite-01
     environment:
-      - GH_OWNER=RPDevs-Vault
+      - GH_OWNER=RPDevs-Builds
       - GH_TOKEN=${GH_PAT}
-      - RUNNER_NAME=llmadmin-lite-01
-      - RUNNER_LABELS=self-hosted,linux,lite
+      - RUNNER_NAME=llmadmin-builds-lite-01
+      - RUNNER_LABELS=self-hosted,linux,lite,lightweight
     volumes:
-      - /mnt/largedata/github_runners/work/llmadmin-lite:/home/runner/_work
+      - /mnt/largedata/github_runners/work/builds-lite:/home/runner/_work
       - /mnt/sharedroot/github_runners/shared:/home/runner/shared
       - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
       - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
       - /var/run/docker.sock:/var/run/docker.sock
-    security_opt:
-      - no-new-privileges:true
     deploy:
       resources:
         limits:
           cpus: '2'
+          memory: 2G
+
+  # --- RPDevs-Vault (Archival/Management Org) ---
+  vault-heavy:
+    <<: *runner-base
+    container_name: vault-heavy-01
+    environment:
+      - GH_OWNER=RPDevs-Vault
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=llmadmin-vault-heavy-01
+      - RUNNER_LABELS=self-hosted,linux,heavy,linux64
+    volumes:
+      - /mnt/largedata/github_runners/work/vault-heavy:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
           memory: 4G
+
+  vault-lite:
+    <<: *runner-base
+    container_name: vault-lite-01
+    environment:
+      - GH_OWNER=RPDevs-Vault
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=llmadmin-vault-lite-01
+      - RUNNER_LABELS=self-hosted,linux,lite,lightweight
+    volumes:
+      - /mnt/largedata/github_runners/work/vault-lite:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # --- IamRPDev (User Account) ---
+  user-lite:
+    <<: *runner-base
+    container_name: iamrpdev-lite-01
+    environment:
+      - GH_OWNER=IamRPDev
+      - GH_TYPE=user
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=llmadmin-iamrpdev-lite-01
+      - RUNNER_LABELS=self-hosted,linux,lite,lightweight
+    volumes:
+      - /mnt/largedata/github_runners/work/iamrpdev-lite:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
