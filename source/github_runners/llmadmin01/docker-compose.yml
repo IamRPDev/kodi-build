@@ -1,0 +1,46 @@
+services:
+  llmadmin-heavy:
+    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
+    container_name: llmadmin-heavy-builder
+    restart: always
+    environment:
+      - GH_OWNER=RPDevs-Vault
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=llmadmin-heavy-01
+      - RUNNER_LABELS=self-hosted,linux,heavy
+    volumes:
+      - /mnt/largedata/github_runners/work/llmadmin-heavy:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 12G
+
+  llmadmin-lite:
+    image: ghcr.io/rpdevs-vault/runner-linux-builder:latest
+    container_name: llmadmin-lite-builder
+    restart: always
+    environment:
+      - GH_OWNER=RPDevs-Vault
+      - GH_TOKEN=${GH_PAT}
+      - RUNNER_NAME=llmadmin-lite-01
+      - RUNNER_LABELS=self-hosted,linux,lite
+    volumes:
+      - /mnt/largedata/github_runners/work/llmadmin-lite:/home/runner/_work
+      - /mnt/sharedroot/github_runners/shared:/home/runner/shared
+      - /mnt/sharedroot/github_runners/llmadmin01:/home/runner/outputs
+      - /mnt/sharedroot/data/apt-cache:/var/cache/apt/archives
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
